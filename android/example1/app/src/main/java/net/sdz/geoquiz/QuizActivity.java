@@ -32,7 +32,7 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
     private boolean[] mCheatedQuestions = new boolean[mQuestionBank.length];
-
+    private int mCheatCount;
     private int mCurrentIndex = 0;
     private boolean mIsCheater;
 
@@ -46,6 +46,7 @@ public class QuizActivity extends AppCompatActivity {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
             mIsCheater = savedInstanceState.getBoolean("cheater", false);
             mCheatedQuestions = savedInstanceState.getBooleanArray("cheats");
+            mCheatCount = savedInstanceState.getInt("cheatCount");
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -74,7 +75,7 @@ public class QuizActivity extends AppCompatActivity {
                 if(mCurrentIndex==mQuestionBank.length) mCurrentIndex=0;
                 mIsCheater=mCheatedQuestions[mCurrentIndex];
                 updateQuestion();
-
+                if(mCheatCount>=3)mCheatButton.setEnabled(false);
             }
         });
 
@@ -103,6 +104,9 @@ public class QuizActivity extends AppCompatActivity {
             }
             mIsCheater = CheatActivity.wasAnswerShown(data);
             mCheatedQuestions[mCurrentIndex]=mIsCheater;
+            if(mIsCheater) mCheatCount++;
+            if(mCheatCount==3)mCheatButton.setEnabled(false);
+            Log.d(TAG, "cheat count:"+mCheatCount);
         }
     }
 
@@ -131,6 +135,7 @@ public class QuizActivity extends AppCompatActivity {
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
         savedInstanceState.putBoolean("cheater", mIsCheater);
         savedInstanceState.putBooleanArray("cheats", mCheatedQuestions);
+        savedInstanceState.putInt("cheatCount", mCheatCount);
     }
 
     @Override
