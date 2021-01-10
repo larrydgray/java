@@ -1,6 +1,9 @@
 package net.sdz.geoquiz;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -12,11 +15,12 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
-    private static final String NUMBER_CORRECT = "correct";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
+    private Button mCheatButton;
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = new Question[] {
@@ -28,27 +32,22 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
 
-    private int mNumberCorrect = 0;
-
     private int mCurrentIndex = 0;
+    private boolean mIsCheater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
-        mTrueButton = (Button) findViewById(R.id.true_button);
-        mFalseButton = (Button) findViewById(R.id.false_button);
+
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
-            mNumberCorrect = savedInstanceState.getInt(NUMBER_CORRECT, 0);
-            mTrueButton.setEnabled(savedInstanceState.getBoolean("true"));
-            mFalseButton.setEnabled(savedInstanceState.getBoolean("false"));
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
 
-
+        mTrueButton = (Button) findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,7 +55,7 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-
+        mFalseButton = (Button) findViewById(R.id.false_button);
         mFalseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,38 +67,37 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mCurrentIndex = mCurrentIndex + 1;
-
-                if(mCurrentIndex==mQuestionBank.length) {
-                    mNextButton.setEnabled(false);
-                    showScore();
-                    mCurrentIndex=0;
-                    mNumberCorrect =0;
-
-                    updateQuestion();
-                    mTrueButton.setEnabled(true);
-                    mFalseButton.setEnabled(true);
-                    mNextButton.setEnabled(true);
-                }else{
-                    updateQuestion();
-                    mTrueButton.setEnabled(true);
-                    mFalseButton.setEnabled(true);
-                }
+                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mIsCheater = false;
+                updateQuestion();
             }
         });
 
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
+            }
+        });
 
         updateQuestion();
     }
-    private void showScore(){
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
 
-        int score = (int)((((float) mNumberCorrect)/mQuestionBank.length)*100);
-        Log.d(TAG, "Score="+score);
-        Toast.makeText(this, "Your score is "+score+"%", Toast.LENGTH_LONG)
-                .show();
-
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return;
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data);
+        }
     }
 
     @Override
@@ -125,9 +123,6 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
-        savedInstanceState.putInt(NUMBER_CORRECT, mNumberCorrect);
-        savedInstanceState.putBoolean("true", mTrueButton.isEnabled());
-        savedInstanceState.putBoolean("false", mFalseButton.isEnabled());
     }
 
     @Override
@@ -151,15 +146,16 @@ public class QuizActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
 
         int messageResId = 0;
-        if (userPressedTrue == answerIsTrue) {
-            messageResId = R.string.correct_toast;
-            mNumberCorrect++;
-        } else {
-            messageResId = R.string.incorrect_toast;
-        }
 
-        mTrueButton.setEnabled(false);
-        mFalseButton.setEnabled(false);
+        if (mIsCheater) {
+            messageResId = R.string.judgment_toast;
+        } else {
+            if (userPressedTrue == answerIsTrue) {
+                messageResId = R.string.correct_toast;
+            } else {
+                messageResId = R.string.incorrect_toast;
+            }
+        }
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
