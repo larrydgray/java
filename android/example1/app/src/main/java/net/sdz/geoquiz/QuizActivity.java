@@ -12,6 +12,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String NUMBER_CORRECT = "correct";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -27,6 +28,8 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
 
+    private int mNumberCorrect = 0;
+
     private int mCurrentIndex = 0;
 
     @Override
@@ -34,14 +37,18 @@ public class QuizActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
-
+        mTrueButton = (Button) findViewById(R.id.true_button);
+        mFalseButton = (Button) findViewById(R.id.false_button);
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mNumberCorrect = savedInstanceState.getInt(NUMBER_CORRECT, 0);
+            mTrueButton.setEnabled(savedInstanceState.getBoolean("true"));
+            mFalseButton.setEnabled(savedInstanceState.getBoolean("false"));
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
 
-        mTrueButton = (Button) findViewById(R.id.true_button);
+
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,7 +56,7 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-        mFalseButton = (Button) findViewById(R.id.false_button);
+
         mFalseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,12 +68,38 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-                updateQuestion();
+
+                mCurrentIndex = mCurrentIndex + 1;
+
+                if(mCurrentIndex==mQuestionBank.length) {
+                    mNextButton.setEnabled(false);
+                    showScore();
+                    mCurrentIndex=0;
+                    mNumberCorrect =0;
+
+                    updateQuestion();
+                    mTrueButton.setEnabled(true);
+                    mFalseButton.setEnabled(true);
+                    mNextButton.setEnabled(true);
+                }else{
+                    updateQuestion();
+                    mTrueButton.setEnabled(true);
+                    mFalseButton.setEnabled(true);
+                }
             }
         });
 
+
         updateQuestion();
+    }
+    private void showScore(){
+
+
+        int score = (int)((((float) mNumberCorrect)/mQuestionBank.length)*100);
+        Log.d(TAG, "Score="+score);
+        Toast.makeText(this, "Your score is "+score+"%", Toast.LENGTH_LONG)
+                .show();
+
     }
 
     @Override
@@ -92,6 +125,9 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putInt(NUMBER_CORRECT, mNumberCorrect);
+        savedInstanceState.putBoolean("true", mTrueButton.isEnabled());
+        savedInstanceState.putBoolean("false", mFalseButton.isEnabled());
     }
 
     @Override
@@ -115,12 +151,15 @@ public class QuizActivity extends AppCompatActivity {
         boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
 
         int messageResId = 0;
-
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
+            mNumberCorrect++;
         } else {
             messageResId = R.string.incorrect_toast;
         }
+
+        mTrueButton.setEnabled(false);
+        mFalseButton.setEnabled(false);
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT)
                 .show();
