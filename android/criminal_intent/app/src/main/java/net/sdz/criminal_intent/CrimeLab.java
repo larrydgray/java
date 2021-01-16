@@ -9,6 +9,7 @@ import net.sdz.criminal_intent.database.CrimeCursorWrapper;
 import net.sdz.criminal_intent.database.CrimeDbSchema;
 import net.sdz.criminal_intent.database.CrimeDbSchema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -67,6 +68,11 @@ public class CrimeLab {
         } finally {
             cursor.close();
         }
+    }
+
+    public File getPhotoFile(Crime crime) {
+        File filesDir = mContext.getFilesDir();
+        return new File(filesDir, crime.getPhotoFilename());
     }
 
     public void updateCrime(Crime crime) {
