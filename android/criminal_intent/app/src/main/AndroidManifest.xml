@@ -22,7 +22,7 @@
         </activity>
         <provider
                 android:name="androidx.core.content.FileProvider"
-                android:authorities="net.sdz.criminal_intent.fileprovider"
+                android:authorities="com.bignerdranch.android.criminalintent.fileprovider"
                 android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data
