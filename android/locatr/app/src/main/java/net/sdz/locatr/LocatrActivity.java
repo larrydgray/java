@@ -2,13 +2,12 @@ package net.sdz.locatr;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+
+import android.os.Bundle;
+
 import androidx.fragment.app.Fragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
-
-//import com.google.android.gms.common.ConnectionResult;
-//import com.google.android.gms.common.GoogleApiAvailability;
 
 public class LocatrActivity extends SingleFragmentActivity {
     private static final int REQUEST_ERROR = 0;
