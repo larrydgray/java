@@ -1,13 +1,13 @@
-package net.itjsb.demo;
+package net.itjsb.springboot_101;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DemoApplication {
+public class Springboot101Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+        SpringApplication.run(Springboot101Application.class, args);
     }
 
 }
