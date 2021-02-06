@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  traefik:
+    image: traefik:1.7.16
+    networks:
+      - public
+      - web
+    ports:
+      - 8081:8081
+      - 443:443
+      - 80:80
+    volumes:
+      - ./traefik.toml:/traefik.toml
+      - ./certs/:/certs/
+      - /var/run/docker.sock:/var/run/docker.sock
+  springboot:
+    image: springio/gs-spring-boot-docker
+    labels:
+      - traefik.enable=true
+      - traefik.backend=backend-cool-tereshkova
+      - traefik.frontend.rule=Host:springboot1.traefikdockertest.net
+      - traefik.docker.network=web
+      - traefik.port=8080
+    networks:
+      - web
+  vue:
+    image: vueapp
+    labels:
+      - traefik.enable=true
+      - traefik.backend=backend-pensive-euclid
+      - traefik.frontend.rule=Host:vue.traefikdockertest.net
+      - traefik.docker.network=web
+      - traefik.port=4003
+    networks:
+      - web
+networks:
+  public:
+    driver: bridge
+  web:
+    external: true

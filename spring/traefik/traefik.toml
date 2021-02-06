@@ -1,0 +1,32 @@
+defaultEntryPoints = ["http", "https"]
+[entryPoints]
+  [entryPoints.dashboard]
+    address = ":8081"
+    [entryPoints.dashboard.auth]
+      [entryPoints.dashboard.auth.basic]
+        users = ["admin:$apr1$9r4rfAwV$FMOsPvd1tqwOi43eziXxR."]
+[api]
+entrypoint="dashboard"
+  [entryPoints.http]
+    address = ":80"
+      [entryPoints.http.redirect]
+        entryPoint = "https"
+  [entryPoints.https]
+    address = ":443"
+      [entryPoints.https.tls]
+[acme]
+email = "javacaverdude@gmail.com"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+  [acme.httpChallenge]
+  entryPoint = "http"
+[docker]
+domain = "traeficdockertest.net"
+watch = true
+network = "web"
+[[tls]]
+  entryPoints = ["https"]
+  [tls.certificate]
+    certFile = "/certs/cert.crt"
+    keyFile = "/certs/cert.key"
